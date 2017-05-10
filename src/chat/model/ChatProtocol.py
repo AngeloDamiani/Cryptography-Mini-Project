@@ -1,6 +1,8 @@
 class Chatprotocol:
     DATABYTES = 4096
     SEPSTRING = "%-%"
+
+    # TODO da cambiare e basare la sequenza su un parametro dell'utente (magari username)
     CLOSE_SEQUENCE = SEPSTRING+"quit"+SEPSTRING
 
     ## MESSAGE FORMAT ##
