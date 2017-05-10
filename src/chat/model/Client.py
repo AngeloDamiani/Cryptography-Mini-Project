@@ -10,6 +10,7 @@ class Client:
     def __init__(self, usr:str, port_tx: int, port_rcv: int, ui : "src.chat.view.ui.Ui"):
 
         #TODO Configurazione su file
+        #TODO Splitting cartelle client e server
 
         self.serverip = "127.0.1.1"
         self.serverport = 9999
