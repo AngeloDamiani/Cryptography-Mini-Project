@@ -18,16 +18,27 @@ class Server:
 
     def start(self):
 
+        print("###########################################")
+
         import src.chat.model.ChatProtocol as chatprotocol
 
         while True:
-            data, user = self.rcvsocket.recvfrom(chatprotocol.DATABYTES)
+            data, user = self.rcvsocket.recvfrom(chatprotocol.Chatprotocol.DATABYTES)
             if data:
-                arrdata = data.decode("utf-8").split(chatprotocol.SEPSTRING)
-                srcport = arrdata[0]
-                srcname = arrdata[1]
-                dstname = arrdata[2]
-                message = arrdata[3]
+                arrdata = data.decode("utf-8")
+
+                lp = chatprotocol.Chatprotocol.LENGTHPORT
+                ln = chatprotocol.Chatprotocol.LENGTHNAME
+                srcport = arrdata[:lp]
+                srcname = arrdata[lp:lp+ln]
+                dstname = arrdata[lp+ln:lp+2*ln]
+                message = arrdata[lp+2*ln:]
+
+                print("SRC = "+srcname)
+                print("DST = "+dstname)
+                print("Message = \n"+message)
+                print("###########################################")
+
 
                 if not (user in self.clients):
                     self._handleConnection(user,srcname, srcport)
@@ -39,7 +50,7 @@ class Server:
     def _sendRcvdMessage(self, dstuser: str, message: str, srcuser: str):
         import src.chat.model.ChatProtocol as chatprotocol
         if dstuser in self.clients:
-            msg = srcuser+chatprotocol.SEPSTRING+message
+            msg = srcuser + message
             msg = msg.encode("utf-8")
             self.txsocket.sendto(msg, self.clients[dstuser])
 

@@ -1,5 +1,6 @@
 import socket
 import threading
+import src.utility.cryptography.CryptoModule as CM
 
 
 from src.chat.model.ChatProtocol import Chatprotocol
@@ -25,7 +26,7 @@ class Client:
 
 
         MY_IP = socket.gethostbyname(socket.gethostname())
-        self.name = usr
+        self.name = usr[:32]
         self.rcvsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.rcvsocket.bind((MY_IP, port_rcv))
 
@@ -33,7 +34,7 @@ class Client:
         self.txsocket.bind((MY_IP, port_tx))
         self.sendMessage("","")
 
-
+        self.quitsequence = CM().encrypt(self.name+"quit")
     def start(self):
 
         self._end = False
@@ -44,8 +45,20 @@ class Client:
 
 
     def sendMessage(self, message: str, dstuser: str):
-        msg = str(self.portrcvaddress) + Chatprotocol.SEPSTRING + self.name + Chatprotocol.SEPSTRING + dstuser + Chatprotocol.SEPSTRING + message
+
+        srcuser = CM().encrypt(self._nameFormat(self.name))
+        dstuser = CM().encrypt(self._nameFormat(dstuser))
+        message = CM().encrypt(message)
+        msg = srcuser + dstuser + message
+
+        portaddress = ("00000"+str(self.portrcvaddress))
+        portaddress = portaddress[len(portaddress)-Chatprotocol.LENGTHPORT:]
+
+        msg = portaddress + msg
+
+
         msg = msg.encode("utf-8")
+
         self.txsocket.sendto(msg,(self.serverip, self.serverport))
 
     def _handleIncomingMessage(self):
@@ -54,19 +67,22 @@ class Client:
             data, user = self.rcvsocket.recvfrom(Chatprotocol.DATABYTES)
             if data:
                 arrdata = data.decode("utf-8")
-                if not (arrdata == Chatprotocol.CLOSE_SEQUENCE):
-                    arrdata = arrdata.split(Chatprotocol.SEPSTRING)
-                    srcname = arrdata[0]
-                    message = arrdata[1]
+                if not (arrdata == self.quitsequence):
+                    crypsrc = arrdata[:Chatprotocol.LENGTHNAME]
+                    crypdata = arrdata[Chatprotocol.LENGTHNAME:]
+                    srcname = "".join((CM().decrypt(crypsrc)).split(" "))
+                    message = CM().decrypt(crypdata)
                     self.gui.printChat(message,srcname)
+
+    def _nameFormat(self, name):
+        return ("                                "+name)[-Chatprotocol.LENGTHNAME:]
 
     def stop(self):
         self._end = True
 
-        self.txsocket.sendto(Chatprotocol.CLOSE_SEQUENCE.encode("utf-8"), (socket.gethostbyname(socket.gethostname()), self.rcvport))
+        self.txsocket.sendto(self.quitsequence.encode("utf-8"), (socket.gethostbyname(socket.gethostname()), self.rcvport))
 
         self.rcvsocket.close()
-
         self.txsocket.close()
 
 

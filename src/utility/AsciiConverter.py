@@ -1,4 +1,6 @@
-class AsciiConverter():
+from .metaclasses import MetaSingleton
+
+class AsciiConverter(metaclass=MetaSingleton):
 
     charBitLength = 8
 

@@ -1,20 +1,17 @@
 class Chatprotocol:
     DATABYTES = 4096
-    SEPSTRING = "%-%"
+    LENGTHNAME = 32
+    LENGTHPORT = 5
 
-    # TODO da cambiare e basare la sequenza su un parametro dell'utente (magari username)
-    CLOSE_SEQUENCE = SEPSTRING+"quit"+SEPSTRING
 
     ## MESSAGE FORMAT ##
 
     # TX
-    #    source_rcv_port%-%srcuser%-%dstuser%-%data   #
+    #    source_rcv_port|srcuser|dstuser|msg   #
 
     # RCVD
-    #    src%-%data
+    #    srcuser|data
     #
-    # CLOSE SEQUENCE
-    #     %-%quit%-%
     #
     #
     ## EXECUTION ##

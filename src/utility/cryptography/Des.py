@@ -89,69 +89,12 @@ class Des(ICrypto):
         self.key = ac.tobits(key[0:8])
 
     def decrypt(self, msg : str) -> str:
-        charstep = int(self.MSGLENGTH / AC.charBitLength)
-        messageArray = self._splitMessage(msg, charstep)
+        return self.encryptDecrypt(msg, encrypt = False)
+    
+    def encrypt(self, msg) -> str:
+        return self.encryptDecrypt(msg, encrypt = True)    
 
-        finalString = ""
-        ac = AC()
-
-        for submsg in messageArray:
-
-            # In case of messages not multiples of 64 bits
-            if len(submsg) < charstep:
-                for i in range(0, charstep - len(submsg)):
-                    submsg = submsg + " "
-
-            # In this moment we have a list of bits (Ascii to bit) of the submsg
-            subbits = ac.tobits(submsg)
-
-            # Initial permutation for the submsg (list of bits)
-            decryption = self._initialPermutation(subbits)
-
-            # Generation of all the keys
-            K = self._kArrayGeneration()[::-1]
-
-            # Division in R and L (list of bits)
-            L = decryption[0:int(len(decryption) / 2)]
-            R = decryption[int(len(decryption) / 2):]
-
-            for i in range(16):
-
-                # Expansion of R (list of bits)
-                f = self._xor(self._RExpansion(R), K[i])
-
-                # Splitting of 6 bits for element
-                split = self._splitBits(f, 6)
-
-                # Application of s-boxes
-                f = self._sBoxesApplications(split)
-
-                # Concatenation after SBoxes
-                temp = []
-                for j in f:
-                    temp = temp + j
-                f = temp
-
-                f = self._PPermutation(f)
-
-                Li = R
-                R = self._xor(f, L)
-                L = Li
-
-            temp = L
-            L = R
-            R = temp
-
-            decryption = L + R
-            decryption = self._finalPermutation(decryption)
-
-            text = ac.frombits(decryption)
-
-            finalString = finalString + text
-
-        return finalString
-
-    def encrypt(self, msg : str) -> str:
+    def encryptDecrypt(self, msg : str, encrypt = True) -> str:
 
         charstep = int(self.MSGLENGTH/ AC.charBitLength)
         messageArray = self._splitMessage(msg,charstep)
@@ -171,14 +114,17 @@ class Des(ICrypto):
             subbits = ac.tobits(submsg)
 
             # Initial permutation for the submsg (list of bits)
-            encryption = self._initialPermutation(subbits)
+            result = self._initialPermutation(subbits)
 
             # Generation of all the keys
-            K = self._kArrayGeneration()
+            if encrypt:
+                K = self._kArrayGeneration()
+            else:
+                K = self._kArrayGeneration()[::-1]
 
             # Division in R and L (list of bits)
-            L = encryption[0:int(len(encryption)/ 2)]
-            R = encryption[int(len(encryption)/ 2):]
+            L = result[0:int(len(result)/ 2)]
+            R = result[int(len(result)/ 2):]
 
             for i in range (16):
 
@@ -203,30 +149,18 @@ class Des(ICrypto):
                 R = self._xor(f,L)
                 L = Li
 
-
             temp = L
             L = R
             R = temp
 
-            encryption = L+R
-            encryption = self._finalPermutation(encryption)
+            result = L+R
+            result = self._finalPermutation(result)
 
-            cyphertext = ac.frombits(encryption)
+            finalsubtext = ac.frombits(result)
 
-            finalString = finalString + cyphertext
+            finalString = finalString + finalsubtext
 
         return finalString
-
-    def _finalPermutation(self, bits : list) -> list:
-
-        arraybit = []
-
-        for i in self.IP1:
-            # -1 Because the permutations are defined from 1 to 48
-            # but array index are defined from 0 to 47
-            arraybit.append(bits[i - 1])
-
-        return arraybit
 
     def _kArrayGeneration(self) -> list:
         K = []
@@ -241,17 +175,6 @@ class Des(ICrypto):
 
         return K
 
-    def _cycleKeyPermutation(self, k : list) -> list:
-        arraybit = []
-
-        for i in self.CKP:
-            # -1 Because the permutations are defined from 1 to 48
-            # but array index are defined from 0 to 47
-            arraybit.append(k[i - 1])
-
-        return arraybit
-
-
     def _shift(self, k : list, shift : int) -> list:
 
         c0 = k[0:int(len(k) / 2)]
@@ -265,17 +188,6 @@ class Des(ICrypto):
             d1.append(d1.pop(0))
 
         return c1+d1
-
-    def _PPermutation(self, bits):
-        arraybit = []
-
-        for i in self.CP:
-            # -1 Because the permutations are defined from 1 to 32
-            # but array index are defined from 0 to 31
-            arraybit.append(bits[i - 1])
-
-        return arraybit
-
 
     def _sBoxesApplications(self, Bs : list) -> list:
         arraybit = []
@@ -306,51 +218,6 @@ class Des(ICrypto):
                 arraybit.append(bitsarray[i : len(bitsplitting)])
         return arraybit
 
-
-    def _xor(self, a : list, b : list) -> list:
-        arraybit = []
-
-        for i in range (len(a)):
-            arraybit.append(int(bool(a[i]) != bool(b[i])))
-
-        return arraybit
-
-
-
-    def _keyPermutation(self, k : list) -> list:
-        arraybit = []
-
-        for i in self.KP:
-            # -1 Because the permutations are defined from 1 to 64
-            # but array index are defined from 0 to 63
-            arraybit.append(k[i - 1])
-        return arraybit
-
-
-    def _RExpansion(self, R : list):
-        arraybit = []
-
-        for i in self.EP:
-            # -1 Because the permutations are defined from 1 to 64
-            # but array index are defined from 0 to 63
-            arraybit.append(R[i - 1])
-
-        return arraybit
-
-
-    def _initialPermutation(self, bits) -> list:
-        #print(len(bits))
-        arraybit = []
-
-        for i in self.IP:
-            # -1 Because the permutations are defined from 1 to 64
-            # but array index are defined from 0 to 63
-            arraybit.append(bits[i-1])
-
-        return arraybit
-
-
-
     def _splitMessage(self, msg : str, charstep : int) -> list:
         arrmessages = []
 
@@ -361,3 +228,39 @@ class Des(ICrypto):
                 arrmessages.append(msg[i : len(msg)])
 
         return arrmessages
+
+    def _xor(self, a : list, b : list) -> list:
+        arraybit = []
+
+        for i in range (len(a)):
+            arraybit.append(int(bool(a[i]) != bool(b[i])))
+
+        return arraybit
+
+    def _permutation(self, input: list, table) -> list:
+        arraybit = []
+
+        for i in table:
+            # -1 Because the permutations are defined from 1 to n
+            # but array index are defined from 0 to n-1
+            arraybit.append(input[i - 1])
+
+        return arraybit
+
+    def _initialPermutation(self, bits) -> list:
+        return self._permutation(bits, self.IP)
+
+    def _finalPermutation(self, bits: list) -> list:
+        return self._permutation(bits, self.IP1)
+
+    def _cycleKeyPermutation(self, k: list) -> list:
+        return self._permutation(k, self.CKP)
+
+    def _PPermutation(self, bits):
+        return self._permutation(bits, self.CP)
+
+    def _keyPermutation(self, k : list) -> list:
+        return self._permutation(k, self.KP)
+    
+    def _RExpansion(self, R : list):
+        return self._permutation(R, self.EP)
