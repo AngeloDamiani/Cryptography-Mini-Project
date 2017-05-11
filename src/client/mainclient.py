@@ -1,17 +1,14 @@
-import sys
 import os.path
-
-
+import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-import src.chat.view.gui as gui
-
-import src.chat.model.Client as client
+from client.view import TkinterGui
+from client.model import Client
 
 name = str(sys.argv[1])
 portrcv = int(sys.argv[2])
 porttx = int(sys.argv[3])
-g = gui.TkinterGui()
-c = client(name, porttx, portrcv, g)
+g = TkinterGui()
+c = Client(name, porttx, portrcv, g)
 c.start()

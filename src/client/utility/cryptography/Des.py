@@ -1,5 +1,6 @@
-from .ICrypto import ICrypto
-import src.utility.AsciiConverter as AC
+from .. import AsciiConverter as AC
+from . import ICrypto
+
 
 class Des(ICrypto):
 

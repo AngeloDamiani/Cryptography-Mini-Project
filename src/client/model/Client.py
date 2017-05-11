@@ -1,13 +1,12 @@
 import socket
 import threading
-import src.utility.cryptography.CryptoModule as CM
 
-
-from src.chat.model.ChatProtocol import Chatprotocol
+from ..utility.cryptography import CryptoModule
+from . import Chatprotocol
 
 
 class Client:
-    def __init__(self, usr:str, port_tx: int, port_rcv: int, ui : "src.chat.view.ui.Ui"):
+    def __init__(self, usr:str, port_tx: int, port_rcv: int, ui : "src.client.view.Ui"):
 
         #TODO Configurazione su file
         #TODO Splitting cartelle client e server
@@ -35,7 +34,7 @@ class Client:
         self.txsocket.bind((MY_IP, port_tx))
         self.sendMessage("","")
 
-        self.quitsequence = CM().encrypt(self.name+"quit")
+        self.quitsequence = CryptoModule().encrypt(self.name+"quit")
     def start(self):
 
         self._end = False
@@ -47,9 +46,9 @@ class Client:
 
     def sendMessage(self, message: str, dstuser: str):
 
-        srcuser = CM().encrypt(self._nameFormat(self.name))
-        dstuser = CM().encrypt(self._nameFormat(dstuser))
-        message = CM().encrypt(message)
+        srcuser = CryptoModule().encrypt(self._nameFormat(self.name))
+        dstuser = CryptoModule().encrypt(self._nameFormat(dstuser))
+        message = CryptoModule().encrypt(message)
         msg = srcuser + dstuser + message
 
         portaddress = ("00000"+str(self.portrcvaddress))
@@ -71,8 +70,8 @@ class Client:
                 if not (arrdata == self.quitsequence):
                     crypsrc = arrdata[:Chatprotocol.LENGTHNAME]
                     crypdata = arrdata[Chatprotocol.LENGTHNAME:]
-                    srcname = "".join((CM().decrypt(crypsrc)).split(" "))
-                    message = CM().decrypt(crypdata)
+                    srcname = "".join((CryptoModule().decrypt(crypsrc)).split(" "))
+                    message = CryptoModule().decrypt(crypdata)
                     self.gui.printChat(message,srcname)
 
     def _nameFormat(self, name):
@@ -86,5 +85,4 @@ class Client:
         self.rcvsocket.close()
         self.txsocket.close()
 
-
-import src.chat.view.ui
+from ..view.Ui import Ui as Ui

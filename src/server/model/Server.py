@@ -1,4 +1,5 @@
 import socket
+from . import Chatprotocol
 
 class Server:
     def __init__(self):
@@ -20,15 +21,13 @@ class Server:
 
         print("###########################################")
 
-        import src.chat.model.ChatProtocol as chatprotocol
-
         while True:
-            data, user = self.rcvsocket.recvfrom(chatprotocol.Chatprotocol.DATABYTES)
+            data, user = self.rcvsocket.recvfrom(Chatprotocol.DATABYTES)
             if data:
                 arrdata = data.decode("utf-8")
 
-                lp = chatprotocol.Chatprotocol.LENGTHPORT
-                ln = chatprotocol.Chatprotocol.LENGTHNAME
+                lp = Chatprotocol.LENGTHPORT
+                ln = Chatprotocol.LENGTHNAME
                 srcport = arrdata[:lp]
                 srcname = arrdata[lp:lp+ln]
                 dstname = arrdata[lp+ln:lp+2*ln]
@@ -48,11 +47,11 @@ class Server:
         self.clients[usrname] = (address[0], int(srcport))
 
     def _sendRcvdMessage(self, dstuser: str, message: str, srcuser: str):
-        import src.chat.model.ChatProtocol as chatprotocol
         if dstuser in self.clients:
             msg = srcuser + message
             msg = msg.encode("utf-8")
             self.txsocket.sendto(msg, self.clients[dstuser])
+
 
 
 

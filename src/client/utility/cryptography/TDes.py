@@ -1,12 +1,13 @@
-from .ICrypto import ICrypto
-import src.utility.AsciiConverter as AC
+from .. import AsciiConverter as AC
+from . import ICrypto
+
 
 class TDes(ICrypto):
 
     def __init__(self, keys: list):
         ac = AC()
 
-        import src.utility.cryptography.Des as Des
+        from ..cryptography.Des import Des
 
         self.d1 = Des(keys[0])
         self.d2 = Des(keys[1])

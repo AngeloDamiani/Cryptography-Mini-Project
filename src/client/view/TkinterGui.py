@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter.ttk import *
-from src.chat.view.ui import Ui
+
+from . import Ui
 
 
 class TkinterGui(Frame, Ui):
@@ -60,7 +61,7 @@ class TkinterGui(Frame, Ui):
         self.text.bind('<Return>', self.send)
         self.dst.bind('<Return>', self.focusOnText)
 
-    def start(self, user : "src.chat.model.client"):
+    def start(self, user : "..model.Client"):
         self.user.delete("1.0", END)
         self.user.insert(INSERT, user.name)
         self.user.config(state=DISABLED)
@@ -101,4 +102,4 @@ class TkinterGui(Frame, Ui):
 
 
 
-import src.chat.model.Client
+from ..model import Client
