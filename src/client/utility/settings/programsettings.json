@@ -1,7 +1,23 @@
 {
-  "algorithm" : {
-    "name": "TDes",
-    "keys": "chiave1h|&|chiave2h|&|chiave3a",
-    "delimeter": "|&|"
+  "algorithm": "algorithmRSA",
+  "algorithmTDES" : {
+    "class": "TDes",
+    "key1": "sImOnAmI",
+    "key2": "mOnAmIsI",
+    "key3": "IOAImmns"
+  },
+
+  "algorithmDES" : {
+    "class": "Des",
+    "key": "sImOnAmI"
+  },
+
+  "algorithmRSA" : {
+    "class": "Rsa",
+    "key1": 5371393606024775251256550436773565977406724269152942136415762782810562554131599074907426010737503501,
+    "key2": 6513516734600035718300327211250928237178281758494417357560086828416863929270451437126021949850746381,
+    "keyserver": "127.0.1.1",
+    "serverport": 50001,
+    "myport": 50002
   }
 }

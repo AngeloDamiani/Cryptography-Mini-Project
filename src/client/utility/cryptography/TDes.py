@@ -7,7 +7,7 @@ class TDes(ICrypto):
     def __init__(self, keys: list):
         ac = AC()
 
-        from ..cryptography.Des import Des
+        from . import Des
 
         self.d1 = Des(keys[0])
         self.d2 = Des(keys[1])
@@ -18,3 +18,5 @@ class TDes(ICrypto):
 
     def decrypt(self, msg : str) -> str:
         return self.d1.decrypt(self.d2.encrypt(self.d3.decrypt(msg)))
+
+

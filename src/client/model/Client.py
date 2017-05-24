@@ -1,5 +1,8 @@
 import socket
 import threading
+import hashlib
+import random
+import string
 
 from ..utility.cryptography import CryptoModule
 from . import Chatprotocol
@@ -10,6 +13,8 @@ class Client:
 
         #TODO Configurazione su file
         #TODO Splitting cartelle client e server
+
+        self.cryptomodule = CryptoModule(usr)
 
         self.serverip = "127.0.1.1"
         self.serverport = 9999
@@ -26,15 +31,19 @@ class Client:
 
 
         MY_IP = socket.gethostbyname(socket.gethostname())
-        self.name = usr[:32]
+        self.name = usr[:Chatprotocol.LENGTHNAME]
         self.rcvsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.rcvsocket.bind((MY_IP, port_rcv))
 
         self.txsocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.txsocket.bind((MY_IP, port_tx))
-        self.sendMessage("","")
+        self.sendMessage(Chatprotocol.LOGINSTRING," ")
 
-        self.quitsequence = CryptoModule().encrypt(self.name+"quit")
+
+        quitstring = ''.join(random.choice(string.ascii_letters) for i in range(Chatprotocol.DATABYTES))
+        self.quitsequence = hashlib.sha256(quitstring.encode()).hexdigest()
+
+
     def start(self):
 
         self._end = False
@@ -43,15 +52,14 @@ class Client:
 
         self.gui.start(self)
 
-
     def sendMessage(self, message: str, dstuser: str):
-
-        srcuser = CryptoModule().encrypt(self._nameFormat(self.name))
-        dstuser = CryptoModule().encrypt(self._nameFormat(dstuser))
-        message = CryptoModule().encrypt(message)
+        c = self.cryptomodule
+        srcuser = Chatprotocol.formattingUser(self.name)
+        dstuser = Chatprotocol.formattingUser(dstuser)
+        message = c.encrypt(message, dstuser)
         msg = srcuser + dstuser + message
 
-        portaddress = ("00000"+str(self.portrcvaddress))
+        portaddress = Chatprotocol.formattingPort(self.portrcvaddress)
         portaddress = portaddress[len(portaddress)-Chatprotocol.LENGTHPORT:]
 
         msg = portaddress + msg
@@ -68,20 +76,16 @@ class Client:
             if data:
                 arrdata = data.decode("utf-8")
                 if not (arrdata == self.quitsequence):
-                    crypsrc = arrdata[:Chatprotocol.LENGTHNAME]
+                    src = arrdata[:Chatprotocol.LENGTHNAME]
                     crypdata = arrdata[Chatprotocol.LENGTHNAME:]
-                    srcname = "".join((CryptoModule().decrypt(crypsrc)).split(" "))
-                    message = CryptoModule().decrypt(crypdata)
+                    srcname = Chatprotocol.unformatUser(src)
+                    message = self.cryptomodule.decrypt(crypdata)
                     self.gui.printChat(message,srcname)
-
-    def _nameFormat(self, name):
-        return ("                                "+name)[-Chatprotocol.LENGTHNAME:]
 
     def stop(self):
         self._end = True
 
         self.txsocket.sendto(self.quitsequence.encode("utf-8"), (socket.gethostbyname(socket.gethostname()), self.rcvport))
-
         self.rcvsocket.close()
         self.txsocket.close()
 

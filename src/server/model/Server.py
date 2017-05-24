@@ -4,6 +4,8 @@ from . import Chatprotocol
 class Server:
     def __init__(self):
 
+        # TODO Configurazione su File
+
         PORT_RCV = 9999
         PORT_TX = 9998
         MAX_USERS = 10
@@ -33,8 +35,8 @@ class Server:
                 dstname = arrdata[lp+ln:lp+2*ln]
                 message = arrdata[lp+2*ln:]
 
-                print("SRC = "+srcname)
-                print("DST = "+dstname)
+                print("SRC = "+srcname.strip(" "))
+                print("DST = "+dstname.strip(" "))
                 print("Message = \n"+message)
                 print("###########################################")
 

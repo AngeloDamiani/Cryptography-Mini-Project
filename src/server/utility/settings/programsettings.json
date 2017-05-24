@@ -1,7 +1,0 @@
-{
-  "algorithm" : {
-    "name": "TDes",
-    "keys": "chiave1h|&|chiave2h|&|chiave3a",
-    "delimeter": "|&|"
-  }
-}
