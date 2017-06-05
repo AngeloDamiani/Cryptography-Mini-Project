@@ -69,16 +69,17 @@ class TkinterGui(Frame, Ui):
         self.parent.mainloop()
 
     def send(self, *args):
-        msg = self.text.get("1.0",END)
-        msg = msg.split("\n")[0]
-        if msg != "":
-            me = self.client.name
-            dst = self.dst.get("1.0",END)
-            dst= dst.split("\n")[0]
-            self.text.delete("1.0", END)
-            self.text.index(INSERT)
-            self.printChat(msg,me)
-            self.client.sendMessage(msg,dst)
+        dst = self.dst.get("1.0",END)
+        dst= dst.split("\n")[0]
+        if dst:
+            msg = self.text.get("1.0",END)
+            msg = msg.split("\n")[0]
+            if msg != "":
+                me = self.client.name
+                self.text.delete("1.0", END)
+                self.text.index(INSERT)
+                self.printChat(msg,me)
+                self.client.sendMessage(msg,dst)
         return "break"
 
     def printChat(self,msg,src):
